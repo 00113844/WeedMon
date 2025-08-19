@@ -1,0 +1,1798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Herbicide vs Weed Battle: Agronomy Edition</title>
+  <style>
+    :root {
+      --uwa-blue: #003087; /* Darker blue */
+      --uwa-gold: #DAAA00; /* Gold */
+      --text-color: #333; /* Dark text for light backgrounds */
+      --background-color: #fff; /* Light background */
+      --section-background: #f5f5f5; /* Slightly darker section background */
+      /* MoA Colors - Adjusted for less brightness */
+      --moa-color-glyphosate: #4A69BD; /* Blue */
+      --moa-color-photosystem-ii: #6B5B95; /* Purple */
+      --moa-color-photosystem-i: #88B04B; /* Green */
+      --moa-color-accase: #F7CAC9; /* Light Pink */
+      --moa-color-als: #92A8CD; /* Light Blue */
+      --moa-color-hppd: #C06C84; /* Dusty Rose */
+      --moa-color-microtubule: #F67280; /* Salmon */
+      --moa-color-synthetic-auxins: #355C7D; /* Dark Teal */
+      --moa-text-color-dark: #333; /* For light backgrounds */
+      --moa-text-color-light: #fff; /* For dark backgrounds */
+    }
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: var(--background-color);
+      color: var(--text-color);
+      font-family: 'Arial', sans-serif;
+      line-height: 1.6;
+    }
+    h1 {
+      color: var(--uwa-blue);
+      margin: 1rem 0;
+      font-size: 2.2rem;
+      border-bottom: 2px solid var(--uwa-gold);
+      padding-bottom: 0.5rem;
+    }
+    #battleCanvas {
+      background: var(--section-background);
+      border: 2px solid var(--uwa-blue);
+      border-radius: 8px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+      margin-top: 1rem;
+      width: 94vw;           /* Fill mobile width nicely */
+      max-width: 600px;      /* Cap on larger screens */
+      aspect-ratio: 2 / 1;   /* Maintain logical 600x300 layout */
+      height: auto;          /* Let aspect-ratio control height */
+      display: block;
+    }
+    #controls {
+      margin-top: 1.5rem;
+      display: flex;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 90%;
+      max-width: 800px;
+      background: var(--section-background); /* Added background for herbicide section */
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    }
+    #nonHerbicideControls {
+      margin-top: 1.5rem;
+      display: flex;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 90%;
+      max-width: 800px;
+    }
+    button {
+      padding: 0.8rem 1.2rem;
+      background: linear-gradient(145deg, var(--uwa-gold), #B8860B);
+      border: none;
+      color: var(--text-color);
+      cursor: pointer;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      flex-grow: 1;
+      min-width: 120px;
+    }
+    button:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+    }
+    button:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    button:disabled {
+      background: #ddd;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+      opacity: 0.7;
+    }
+    /* Specific button styles for dark backgrounds with bright text */
+    #executeCombinedAttack, #clearSelection,
+    #nonHerbicideControls button[style*="background-color: rgb(0, 48, 135)"],
+    #nonHerbicideControls button[style*="background-color: rgb(108, 117, 125)"]
+    {
+        color: #fff;
+    }
+
+    /* MoA specific button styles */
+    .moa-Glyphosate { background: var(--moa-color-glyphosate); color: var(--moa-text-color-light); }
+    .moa-Glyphosate:hover { background: #3A5B9C; }
+    .moa-Photosystem-II-inhibitors { background: var(--moa-color-photosystem-ii); color: var(--moa-text-color-light); }
+    .moa-Photosystem-II-inhibitors:hover { background: #5A4B7C; }
+    .moa-Photosystem-I-inhibitors { background: var(--moa-color-photosystem-i); color: var(--moa-text-color-dark); }
+    .moa-Photosystem-I-inhibitors:hover { background: #719A3B; }
+    .moa-ACCase-inhibitors { background: var(--moa-color-accase); color: var(--moa-text-color-dark); }
+    .moa-ACCase-inhibitors:hover { background: #DDAAAA; }
+    .moa-ALS-inhibitors { background: var(--moa-color-als); color: var(--moa-text-color-dark); }
+    .moa-ALS-inhibitors:hover { background: #7B8FB5; }
+    .moa-HPPD-inhibitors { background: var(--moa-color-hppd); color: var(--moa-text-color-light); }
+    .moa-HPPD-inhibitors:hover { background: #A85A70; }
+    .moa-Microtubule-inhibitors { background: var(--moa-color-microtubule); color: var(--moa-text-color-light); }
+    .moa-Microtubule-inhibitors:hover { background: #D35C6C; }
+    .moa-Synthetic-auxins { background: var(--moa-color-synthetic-auxins); color: var(--moa-text-color-light); }
+    .moa-Synthetic-auxins:hover { background: #2A4A6A; }
+
+    #executeCombinedAttack {
+      background: linear-gradient(145deg, var(--uwa-blue), #001F5B);
+    }
+    #executeCombinedAttack:hover {
+      background: linear-gradient(145deg, #001F5B, var(--uwa-blue));
+    }
+    #clearSelection {
+      background: linear-gradient(145deg, #dc3545, #b02a37);
+    }
+    #clearSelection:hover {
+      background: linear-gradient(145deg, #b02a37, #dc3545);
+    }
+    #info {
+      margin-top: 1.5rem;
+      font-size: 1.1rem;
+      text-align: center;
+      background: var(--section-background);
+      padding: 1.2rem 2.5rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      max-width: 90%;
+      border-left: 4px solid var(--uwa-gold);
+      color: var(--text-color);
+    }
+    #info div {
+      margin-bottom: 0.5rem;
+    }
+    .character-icon {
+      font-size: 60px;
+      margin-bottom: 5px;
+    }
+    #selectedHerbicides {
+      margin-top: 1rem;
+      text-align: center;
+      font-size: 1.1em;
+      background: var(--section-background);
+      padding: 0.8rem 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      width: 90%;
+      max-width: 800px;
+      color: var(--text-color);
+    }
+    #selectedHerbicidesDisplay {
+      font-weight: bold;
+      color: var(--uwa-blue);
+  overflow-wrap: anywhere; /* Prevent overflow on narrow screens */
+    }
+    #weedEventBanner, #winBanner { /* Added #winBanner */
+      position: relative;
+      width: 100%;
+      text-align: center;
+      font-size: 2rem;
+      font-weight: bold;
+      color: #dc3545;
+      margin: 1.2rem 0 0.5rem 0;
+      z-index: 10;
+      text-shadow: 0 0 8px rgba(0,0,0,0.2);
+    }
+    #winBanner {
+        color: #28a745; /* Green color for win message */
+    }
+    #overallWinBanner {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: rgba(40, 167, 69, 0.9); /* Green with transparency */
+        color: #fff;
+        font-size: 3.5rem; /* Large font size */
+        font-weight: bold;
+        padding: 30px 50px;
+        border-radius: 15px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        z-index: 1000;
+        display: none; /* Hidden by default */
+        text-align: center;
+        width: 80%;
+        max-width: 700px;
+        line-height: 1.2;
+    }
+  /* Bankrupt (out-of-money) visual dimming for main control panels */
+  .bankrupt-dim { position: relative; filter: grayscale(0.7) brightness(0.85); opacity: 0.55; }
+  .bankrupt-dim::after { content: "Bankrupt – take a loan to continue"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,48,135,0.85); color:#fff; padding:0.6rem 0.9rem; border-radius:8px; font-size:0.85rem; width:80%; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.25); }
+
+    /* Modal base styles */
+  #weedInfoModal, #herbicideInfoModal, #rulesModal, #nonChemInfoModal {
+      display: none; /* Hidden until opened via JS */
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.55);
+      z-index: 900;
+      justify-content: center;
+      align-items: flex-start;
+      padding-top: 4vh;
+      overflow-y: auto;
+    }
+  #weedInfoModal .modal-content, #herbicideInfoModal .modal-content, #rulesModal .modal-content, #nonChemInfoModal .modal-content {
+      background: #fff;
+      padding: 1.25rem 1.5rem 1.5rem;
+      border-radius: 12px;
+  max-width: 520px;
+      width: calc(100% - 2rem);
+      box-shadow: 0 8px 28px rgba(0,0,0,0.25);
+      position: relative;
+      animation: modalFadeIn 160ms ease-out;
+      border: 2px solid var(--uwa-blue);
+    }
+    .close-button {
+      position: absolute;
+      top: 8px; right: 12px;
+      font-size: 1.4rem;
+      cursor: pointer;
+      color: var(--uwa-blue);
+    }
+    .close-button:hover { color: #001F5B; }
+    @keyframes modalFadeIn { from { opacity: 0; transform: translateY(-10px);} to { opacity: 1; transform: translateY(0);} }
+  #herbicideInfoModal ul, #weedInfoModal ul, #nonChemInfoModal ul { margin: 0.3rem 0 0.9rem; padding-left: 1.2rem; }
+  #herbicideInfoModal h2, #weedInfoModal h2, #nonChemInfoModal h2 { margin-top: 0; }
+    /* Focus outline for accessibility */
+  #weedInfoModal button:focus, #herbicideInfoModal button:focus, #rulesModal button:focus, #nonChemInfoModal button:focus, .close-button:focus { outline: 3px solid var(--uwa-gold); outline-offset: 2px; }
+
+    /* Mobile tweaks */
+    @media (max-width: 600px) {
+      h1 { font-size: 1.6rem; }
+      button { font-size: 0.95rem; padding: 0.7rem 1rem; min-width: 120px; }
+      #info { font-size: 1rem; padding: 1rem; }
+      #controls, #nonHerbicideControls { gap: 0.5rem; }
+      .character-icon { font-size: 48px; }
+    }
+  </style>
+</head>
+<body>
+  <h1>Herbicide vs Weed Battle: Agronomy Edition</h1>
+  <canvas id="battleCanvas" width="600" height="300"></canvas>
+  <div id="controls"></div>
+  <div id="selectedHerbicides">
+    Selected for attack: <span id="selectedHerbicidesDisplay">None</span>
+    <button id="executeCombinedAttack">Execute Combined Attack</button>
+    <button id="clearSelection">Clear</button>
+  </div>
+  <div id="nonHerbicideControls"></div>
+  <div id="info"></div>
+
+  <!-- Weed Info Modal -->
+  <div id="weedInfoModal" role="dialog" aria-modal="true" aria-labelledby="modalWeedName">
+    <div class="modal-content">
+      <span class="close-button">&times;</span>
+      <h2 id="modalWeedName"></h2>
+      <p><strong>Growth Stage:</strong> <span id="modalWeedGrowthStage"></span></p>
+      <p><strong>Susceptible Modes of Action:</strong> <ul id="modalWeedSusceptibleMoAs"></ul></p>
+      <p><strong>Resistant Modes of Action:</strong> <ul id="modalWeedResistantMoAs"></ul></p>
+      <p><strong>Weakness:</strong> <span id="modalWeedWeakness"></span></p>
+      <p id="scoutingMessage" style="font-style: italic; color: var(--uwa-gold);"></p>
+    </div>
+  </div>
+  <!-- Herbicide Info Modal -->
+  <div id="herbicideInfoModal" role="dialog" aria-modal="true" aria-labelledby="modalHerbicideName">
+    <div class="modal-content">
+      <span class="close-button">&times;</span>
+      <h2 id="modalHerbicideName">Herbicide Info</h2>
+      <p><strong>Mode of Action:</strong> <span id="modalHerbicideMoAGroup"></span></p>
+      <p><strong>Effective Against:</strong></p>
+      <ul id="modalEffectiveWeeds"></ul>
+      <p><strong>Less Effective Against (Resistance):</p>
+      <ul id="modalResistantWeeds"></ul>
+      <p style="font-size:0.75rem; line-height:1.1; color:#555; margin-top:0.8rem;">
+        Source: CropLife Australia Herbicide Mode of Action Table (accessed 2025). Group designations (GRp) are provided as an educational simplification; always consult current product labels & APVMA resources.
+      </p>
+    </div>
+  </div>
+  <!-- Non-Chemical Action Info Modal -->
+  <div id="nonChemInfoModal" role="dialog" aria-modal="true" aria-labelledby="modalNonChemName">
+    <div class="modal-content">
+      <span class="close-button">&times;</span>
+      <h2 id="modalNonChemName">Action Info</h2>
+      <p><strong>Type:</strong> <span id="modalNonChemType"></span></p>
+      <p><strong>Effect:</strong> <span id="modalNonChemEffect"></span></p>
+      <p><strong>Cost:</strong> $<span id="modalNonChemCost"></span></p>
+      <p id="modalNonChemDescription" style="margin-top:0.6rem;"></p>
+      <p style="font-size:0.7rem; line-height:1.1; color:#555; margin-top:0.8rem;">
+        Non-chemical tactics support integrated weed management. Effects shown are gamified simplifications and may not reflect exact real-world efficacy.
+      </p>
+    </div>
+  </div>
+  <!-- Game Rules Modal -->
+  <div id="rulesModal" role="dialog" aria-modal="true" aria-labelledby="rulesModalTitle">
+    <div class="modal-content">
+      <span class="close-button">&times;</span>
+      <h2 id="rulesModalTitle">Game Rules</h2>
+      <p>Welcome to Herbicide vs Weed Battle! Manage weeds in Western Australia using herbicides and strategies.</p>
+      <ul>
+        <li><strong>Objective:</strong> Defeat weeds over 5 rounds by reducing their HP to 0 using herbicides and actions. Earn money by winning, but lose if you run out.</li>
+        <li><strong>Mechanics:</strong> Select herbicides and non-herbicide actions, then execute combined attacks. Consider weed growth stages, resistances, and real-life effectiveness.</li>
+        <li><strong>Weed Events:</strong> Weeds can spread seeds, develop resistance, or mutate randomly, costing money or boosting HP.</li>
+        <li><strong>Winning:</strong> Best of 5 rounds. Use scouting and advice to exploit weaknesses based on real agronomy.</li>
+        <li><strong>Tips:</strong> Combine diverse MoAs for synergy. Match pre/post-emergent to growth stages. Manage your budget wisely!</li>
+      </ul>
+      <p>For more on HTML buttons used in modals, see [developer.mozilla.org](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/button) and [html.com](https://html.com/tags/button/).</p>
+    </div>
+  </div>
+  <!-- Overall Win Banner -->
+  <div id="overallWinBanner"></div>
+
+  <script>
+    // Modal setups
+    const herbicideInfoModal = document.getElementById('herbicideInfoModal');
+  const nonChemInfoModal = document.getElementById('nonChemInfoModal');
+    const closeHerbicideButton = herbicideInfoModal.querySelector('.close-button');
+    closeHerbicideButton.onclick = () => { closeModal(herbicideInfoModal); };
+    window.addEventListener('click', e => { if (e.target === herbicideInfoModal) { closeModal(herbicideInfoModal); } });
+
+    if (nonChemInfoModal) {
+      const closeNonChemBtn = nonChemInfoModal.querySelector('.close-button');
+      if (closeNonChemBtn) closeNonChemBtn.onclick = () => { closeModal(nonChemInfoModal); };
+      window.addEventListener('click', e => { if (e.target === nonChemInfoModal) { closeModal(nonChemInfoModal); } });
+    }
+
+    const rulesModal = document.getElementById('rulesModal');
+    const closeRulesButton = rulesModal.querySelector('.close-button');
+    closeRulesButton.onclick = () => { closeModal(rulesModal); };
+    window.addEventListener('click', e => { if (e.target === rulesModal) { closeModal(rulesModal); } });
+
+    function openModal(modalEl) {
+      if (!modalEl) return;
+      modalEl.style.display = 'flex';
+      // Save previously focused element
+      modalEl.__previouslyFocused = document.activeElement;
+      // Focus first focusable element inside (close button)
+      const focusable = modalEl.querySelector('.close-button');
+      if (focusable) focusable.focus();
+      document.addEventListener('keydown', handleModalKeydown);
+    }
+    function closeModal(modalEl) {
+      if (!modalEl) return;
+      modalEl.style.display = 'none';
+      document.removeEventListener('keydown', handleModalKeydown);
+      if (modalEl.__previouslyFocused) {
+        modalEl.__previouslyFocused.focus();
+      }
+    }
+    function handleModalKeydown(e) {
+      if (e.key === 'Escape') {
+  [herbicideInfoModal, rulesModal, weedInfoModal, nonChemInfoModal].forEach(m => { if (m && m.style.display === 'flex') closeModal(m); });
+      }
+      // Basic focus trap
+      if (e.key === 'Tab') {
+  const openModalEl = [herbicideInfoModal, rulesModal, weedInfoModal, nonChemInfoModal].find(m => m && m.style.display === 'flex');
+        if (!openModalEl) return;
+        const focusables = Array.from(openModalEl.querySelectorAll('button, [href], .close-button, [tabindex]:not([tabindex="-1"])'))
+          .filter(el => !el.disabled && el.offsetParent !== null);
+        if (focusables.length === 0) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    }
+
+    function showHerbicideInfo(herbicide) {
+      const modalHerbicideName = document.getElementById('modalHerbicideName');
+      if (modalHerbicideName) {
+        modalHerbicideName.textContent = herbicide.name;
+      }
+      // Populate Mode of Action + Group line
+      const modalHerbicideMoAGroup = document.getElementById('modalHerbicideMoAGroup');
+      if (modalHerbicideMoAGroup) {
+        const groupText = herbicide.group || '';
+        const moaText = herbicide.moa || '';
+        if (groupText && moaText) {
+          modalHerbicideMoAGroup.textContent = `${groupText} – ${moaText}`;
+        } else if (groupText || moaText) {
+          modalHerbicideMoAGroup.textContent = groupText || moaText;
+        } else {
+          modalHerbicideMoAGroup.textContent = 'N/A';
+        }
+      }
+      
+      const effectiveList = document.getElementById('modalEffectiveWeeds');
+      if (effectiveList) {
+        effectiveList.innerHTML = '';
+        const effectiveWeeds = weedCardsData.filter(w => w.susceptibleMoAs.includes(herbicide.moa) || w.weaknessMoA === herbicide.moa);
+        if (effectiveWeeds.length === 0) {
+          const li = document.createElement('li'); li.textContent = 'None documented in current dataset'; effectiveList.appendChild(li);
+        } else {
+          effectiveWeeds.forEach(w => { const li = document.createElement('li'); li.textContent = w.name; effectiveList.appendChild(li); });
+        }
+      }
+
+  // FIX: Correct ID for resistant list (was modalResistantMoAs)
+  const resistantList = document.getElementById('modalResistantWeeds');
+      if (resistantList) {
+        resistantList.innerHTML = '';
+        const resistantWeeds = weedCardsData.filter(w => w.resistantMoAs.includes(herbicide.moa));
+        if (resistantWeeds.length === 0) {
+          const li = document.createElement('li'); li.textContent = 'No confirmed resistance in dataset'; resistantList.appendChild(li);
+        } else {
+          resistantWeeds.forEach(w => { const li = document.createElement('li'); li.textContent = w.name; resistantList.appendChild(li); });
+        }
+      }
+      
+  if (herbicideInfoModal) openModal(herbicideInfoModal);
+    }
+
+    function showNonChemInfo(action) {
+      const nameEl = document.getElementById('modalNonChemName');
+      const typeEl = document.getElementById('modalNonChemType');
+      const effectEl = document.getElementById('modalNonChemEffect');
+      const costEl = document.getElementById('modalNonChemCost');
+      const descEl = document.getElementById('modalNonChemDescription');
+      if (nameEl) nameEl.textContent = action.name;
+      if (typeEl) typeEl.textContent = action.type;
+      if (effectEl) effectEl.textContent = action.effect.replace(/_/g,' ');
+      if (costEl) costEl.textContent = action.cost;
+      if (descEl) descEl.textContent = action.description || '';
+      const modal = document.getElementById('nonChemInfoModal');
+      if (modal) openModal(modal);
+    }
+
+    function showRules() {
+  openModal(rulesModal);
+    }
+  </script>
+
+  <script>
+    // Updated data for Western Australia weeds and herbicides
+    const weedCardsData = [
+      { name: "Annual Ryegrass", susceptibleMoAs: ["ACCase inhibitors", "ALS inhibitors", "HPPD inhibitors"], resistantMoAs: ["Glyphosate", "Paraquat"], weaknessMoA: "HPPD inhibitors", pointValue: 8, growthStages: ["seedling", "tillering", "heading"] },
+      { name: "Wild Radish", susceptibleMoAs: ["ALS inhibitors", "Photosystem II inhibitors", "HPPD inhibitors"], resistantMoAs: ["Glyphosate", "Synthetic auxins", "Photosystem II inhibitors"], weaknessMoA: "ALS inhibitors", pointValue: 7, growthStages: ["seedling", "rosette", "bolting"] },
+      { name: "Wild Oats", susceptibleMoAs: ["ACCase inhibitors", "ALS inhibitors", "Photosystem II inhibitors"], resistantMoAs: ["ACCase inhibitors"], weaknessMoA: "Photosystem II inhibitors", pointValue: 6, growthStages: ["seedling", "tillering", "heading"] },
+      { name: "Brome Grass", susceptibleMoAs: ["Glyphosate", "ACCase inhibitors", "HPPD inhibitors"], resistantMoAs: ["ALS inhibitors"], weaknessMoA: "Glyphosate", pointValue: 9, growthStages: ["seedling", "vegetative", "flowering"] },
+      { name: "Barnyard Grass", susceptibleMoAs: ["ACCase inhibitors", "ALS inhibitors", "Glyphosate"], resistantMoAs: ["Glyphosate"], weaknessMoA: "ACCase inhibitors", pointValue: 7, growthStages: ["seedling", "tillering", "heading"] },
+      { name: "Feathertop Rhodes Grass", susceptibleMoAs: ["HPPD inhibitors", "Photosystem II inhibitors"], resistantMoAs: ["Glyphosate", "ACCase inhibitors"], weaknessMoA: "HPPD inhibitors", pointValue: 10, growthStages: ["seedling", "tillering", "heading"] },
+      { name: "Silvergrass", susceptibleMoAs: ["Glyphosate", "Photosystem I inhibitors"], resistantMoAs: ["Microtubule inhibitors"], weaknessMoA: "Photosystem I inhibitors", pointValue: 5, growthStages: ["seedling", "vegetative", "flowering"] }
+    ];
+
+    const controlCardsData = [
+      { name: "Glyphosate", moa: "Glyphosate", group: "Group 9 (EPSPS inhibitor)", strength: 6, icon: "🧴", type: "post-emergent", cost: 10 },
+      { name: "Atrazine", moa: "Photosystem II inhibitors", group: "Group 5 (PSII Ser 264 binder - Triazine)", strength: 5, icon: "🧪", type: "pre-emergent", cost: 8 },
+      { name: "Paraquat", moa: "Photosystem I inhibitors", group: "Group 22 (PSI electron diversion)", strength: 6, icon: "💧", type: "post-emergent", cost: 12 },
+      { name: "Clethodim", moa: "ACCase inhibitors", group: "Group 1 (ACCase inhibitor - DIM/FOP class)", strength: 5, icon: "�", type: "post-emergent", cost: 9 },
+      { name: "Imazapic", moa: "ALS inhibitors", group: "Group 2 (ALS/AHAS inhibitor - Imidazolinone)", strength: 4, icon: "⚗️", type: "both", cost: 11 },
+      { name: "Mesotrione", moa: "HPPD inhibitors", group: "Group 27 (HPPD inhibitor - Triketone)", strength: 5, icon: "🧪", type: "both", cost: 13 },
+      { name: "Trifluralin", moa: "Microtubule inhibitors", group: "Group 3 (Microtubule assembly inhibitor - Dinitroaniline)", strength: 4, icon: "🛡️", type: "pre-emergent", cost: 8 },
+      { name: "2,4-D", moa: "Synthetic auxins", group: "Group 4 (Auxin mimic)", strength: 5, icon: "🌿", type: "post-emergent", cost: 9 }
+    ];
+
+    // Map MoA to CSS class for styling
+    const moaToClass = {
+        "Glyphosate": "moa-Glyphosate",
+        "Photosystem II inhibitors": "moa-Photosystem-II-inhibitors",
+        "Photosystem I inhibitors": "moa-Photosystem-I-inhibitors",
+        "ACCase inhibitors": "moa-ACCase-inhibitors",
+        "ALS inhibitors": "moa-ALS-inhibitors",
+        "HPPD inhibitors": "moa-HPPD-inhibitors",
+        "Microtubule inhibitors": "moa-Microtubule-inhibitors",
+        "Synthetic auxins": "moa-Synthetic-auxins"
+    };
+
+    let controlCards = controlCardsData;
+    let currentWeed = null;
+    let money = 100;
+    let lostGame = false;
+    let bankLoanCount = 0; // New: Track number of bank loans taken
+    let roundWinCount = 0; // New: Track number of rounds won for tiered bonus
+    const funnyLossMessages = [
+      "Your crops are now officially a weed farm. Better luck next time!",
+      "The weeds have unionized. They demand better working conditions, and your money.",
+      "Your wallet is lighter than a dandelion seed in a tornado. Game Over!",
+      "The only green left is the weeds. And maybe mold in your fridge.",
+      "You've achieved peak weed. Congratulations, or commiserations.",
+      "Your farm looks like a 'before' picture for a weed control commercial. You lost!"
+    ];
+    // New: Funny win messages
+    const funnyWinMessages = [
+      "UWA Agronomy Club: Hip-hip-hooray! Another weed bites the dust!",
+      "That's how we roll in WA! Weed control, master level!",
+      "You're not just a farmer, you're a weed-fighting legend!",
+      "The weeds are retreating! Victory smells like freshly sprayed fields!",
+      "Another one for the good guys! Your crops thank you!",
+      "Weed control? More like weed *controlled*! Boom!"
+    ];
+    // New: Funny overall win messages for the game series
+    const funnyOverallWinMessages = [
+        "🏆 UWA Agronomy Club: Grand Champion of Weed Warfare! Hip-hip-hooray! 🌾",
+        "You've cultivated success! The weeds of Western Australia are officially in retreat! 🎉",
+        "From the fields of Perth to the farmlands beyond, your agronomy skills are legendary! Well done! 🌱",
+        "The only thing growing faster than your crops is your reputation! You're a weed-whipping wizard! ✨",
+        "They came, they saw, they were sprayed! Another glorious victory for the farmer! 🚜",
+        "The weeds tried to outsmart you, but you had the better MoA! Game, set, match! ✅"
+    ];
+
+    let round = 1;
+    const maxRounds = 5;
+    let farmerWins = 0;
+    let weedWins = 0;
+    let weedStrengthMultiplier = 0.8; // Starting weaker
+    let farmerDialogue = '';
+    let weedDialogue = '';
+    const costVsDamageDialogues = {
+      favorable: {
+        farmer: [
+          "Steal of a deal! This weed got a glyphosate burn for the price of water!",
+          "That was a smashing success! The weeds are having a bad MoA day!",
+          "Pocket change well spent! They won't be photosynthesizing anytime soon!",
+          "Value for money! This field is cleaner than my combine after harvest!",
+          "Who needs a big budget when you've got smart spraying?",
+          "They thought they were resistant, but my wallet says otherwise!",
+          "That's a 'Mode of Action' I can get behind!"
+        ],
+        weed: [
+          "Come back when you can afford me! Oh wait, you just did it cheaply!",
+          "Ouch! That stings! My cell membranes are in disarray!",
+          "No fair hit! My meristem is officially miffed!",
+          "I'll get you next time! You just disrupted my auxin pathways, that's all!",
+          "My ACCase just folded! You win this round, farmer.",
+          "My photosynthetic process is... experiencing difficulties.",
+          "This isn't organic, you know! My ATP synthesis is crashing!"
+        ]
+      },
+      unfavorable: {
+        farmer: [
+          "My bank account is crying! I paid more for that than a new tractor tire!",
+          "I think I paid more to learn a lesson! This weed just laughed at my ALS inhibitor.",
+          "Ouch, my wallet hurts! Did I just fund their resistance program?",
+          "That was overpriced pain! Like buying a post-emergent for a pre-emergent problem.",
+          "Did I just spray water? My 'strength' seems to be my weakness!",
+          "This weed is tougher than my old boots after a muddy season!",
+          "My spray tank is empty, and so is my hope!"
+        ],
+        weed: [
+          "Cheap shot indeed! That was barely a tickle for my robust metabolism!",
+          "I resisted like a champ! Your MoA is *so* last season!",
+          "Too bad for you, buddy! My genetic diversity is booming!",
+          "Better luck saving next time! You wasted that Mesotrione!",
+          "Is that all you've got, farmer? My enzymatic detoxification says 'nope!'",
+          "I'm feeling stronger, actually! Did you accidentally apply fertilizer?"
+        ]
+      }
+    };
+    let selectedHerbicides = [];
+    let activeBuffs = [];
+    let weedWeaknessRevealed = false;
+    let pendingCost = 0;
+    let agroAdviceHerbicides = []; // Now stores both herbicide and non-herbicide actions
+  let agroRecommendedActions = []; // New: full recommended combination (herbicides + non-herb actions)
+
+    const nonHerbicideActionsData = [
+      { name: "Adjuvant", type: "buff", effect: "increase_damage", value: 0.2, cost: 15, icon: "✨", description: "Increases herbicide effectiveness for the next attack." },
+      { name: "Spot Spraying", type: "buff", effect: "spot_spray_multiplier", value: 5, cost: 25, icon: "🎯", description: "Targets individual weeds, multiplying damage by 5 for the next attack." }, // Changed effect to spot_spray_multiplier
+      { name: "Summer Weed Control", type: "setup", effect: "halve_weed_hp", value: 0, cost: 40, icon: "🌱", description: "Applies a base treatment to the soil, halving the current weed's HP." }, // Changed effect
+      { name: "Seed Destructor", type: "persistent_buff", effect: "prevent_weed_growth", value: 0, cost: 40, icon: "🌿", description: "Prevents weed mutations or HP increases in subsequent rounds." }, // Changed type and effect
+      { name: "Crop Rotation", type: "persistent_buff", effect: "reduce_weed_hp", value: 0.1, cost: 60, icon: "🔄", description: "Long-term strategy: slightly reduces all future weed HP. Lasts for all remaining rounds." },
+      { name: "Scouting", type: "info", effect: "reveal_weakness", value: 0, cost: 10, icon: "🔍", description: "Reveals the current weed's specific weakness for this round." },
+      { name: "Call the Agro", type: "info", effect: "agro_advice", value: 2, cost: 20, icon: "📞", description: "Get expert advice on the best herbicide combinations and doubles damage." } // Changed effect
+    ];
+
+    // Calculate minimum actionable cost
+    let minActionableCost = Infinity;
+    function recalcMinActionableCost() {
+      minActionableCost = Infinity;
+      controlCardsData.forEach(card => { if (card.cost < minActionableCost) minActionableCost = card.cost; });
+      nonHerbicideActionsData.forEach(action => {
+        if (["buff","debuff","setup","persistent_buff"].includes(action.type)) {
+          if (action.cost < minActionableCost) minActionableCost = action.cost;
+        }
+      });
+      if (!isFinite(minActionableCost)) minActionableCost = 0; // Fallback safety
+    }
+    recalcMinActionableCost();
+
+
+  const canvas = document.getElementById('battleCanvas');
+  const ctx = canvas.getContext('2d');
+  // Base logical canvas size used throughout drawing code
+  const CANVAS_BASE_WIDTH = 600;
+  const CANVAS_BASE_HEIGHT = 300;
+
+    const WEED_X = 350;
+    const PLAYER_X = 150;
+    const Y_OFFSET = 50;
+    const TEXT_OFFSET_Y = -10;
+    const BAR_OFFSET_Y = 110;
+
+    // Resize the canvas to fit its CSS size and device pixel ratio, while preserving
+    // a logical coordinate system of 600x300 for the drawing code.
+    function resizeCanvas() {
+      if (!canvas) return;
+      const dpr = window.devicePixelRatio || 1;
+      const cssWidth = Math.max(1, Math.floor(canvas.clientWidth || CANVAS_BASE_WIDTH));
+      const cssHeight = Math.max(1, Math.floor(canvas.clientHeight || CANVAS_BASE_HEIGHT));
+      canvas.width = Math.max(1, Math.round(cssWidth * dpr));
+      canvas.height = Math.max(1, Math.round(cssHeight * dpr));
+      // Map 0..600 x 0..300 into the current canvas size with crisp DPR scaling
+      const scaleX = (cssWidth / CANVAS_BASE_WIDTH) * dpr;
+      const scaleY = (cssHeight / CANVAS_BASE_HEIGHT) * dpr;
+      ctx.setTransform(scaleX, 0, 0, scaleY, 0, 0);
+    }
+
+    function pickRandomWeed() {
+      const card = weedCardsData[Math.floor(Math.random() * weedCardsData.length)];
+      const randomFactor = 0.8 + Math.random() * 0.4; // 80-120% HP variation
+      const hp = Math.floor(card.pointValue * 10 * weedStrengthMultiplier * randomFactor);
+      const initialGrowthStage = card.growthStages[0];
+      const weedIcons = ["🌿", "🌾", "🍀", "🌱"];
+      const icon = weedIcons[Math.floor(Math.random() * weedIcons.length)];
+      return {...card, maxHp: hp, hp: hp, icon: icon, growthStage: initialGrowthStage};
+    }
+
+    function advanceWeedGrowthStage() {
+      if (!currentWeed) return;
+      const seedDestructorActive = activeBuffs.some(buff => buff.effect === "prevent_weed_growth");
+
+      const currentStageIndex = currentWeed.growthStages.indexOf(currentWeed.growthStage);
+      if (currentStageIndex < currentWeed.growthStages.length - 1) {
+        currentWeed.growthStage = currentWeed.growthStages[currentStageIndex + 1];
+        updateInfo(`The ${currentWeed.name} has advanced to the ${currentWeed.growthStage} stage!`);
+        weedDialogue = `Hahaha! I'm growing bigger and stronger! Your pre-emergents are useless now!`;
+        farmerDialogue = `Darn it, it's ${currentWeed.growthStage}! This just got tougher.`;
+        // Random HP boost on growth, prevented by Seed Destructor
+        if (!seedDestructorActive) {
+            const growthBoost = Math.floor(Math.random() * 20) + 10;
+            currentWeed.hp += growthBoost;
+            currentWeed.maxHp += growthBoost;
+        } else {
+            updateInfo(`Seed Destructor prevented ${currentWeed.name} from gaining HP!`);
+        }
+      } else {
+        updateInfo(`The ${currentWeed.name} is at its final growth stage (${currentWeed.growthStage}).`);
+        weedDialogue = `I'm fully mature! Try and stop my seed production now, farmer!`;
+        farmerDialogue = `It's at its toughest stage. Time for some serious post-emergents.`;
+      }
+      drawBattle();
+      updateInfo();
+    }
+
+    function calculateCombinedDamage(cards, weed) {
+      let totalDamage = 0;
+      let uniqueMoAs = new Set();
+      let damageMultiplier = 1;
+      let resistanceReduction = 0;
+      let preEmergentBonusActive = false;
+      let postEmergentBonusActive = false;
+      let spotSprayMultiplier = 1;
+
+      activeBuffs.forEach(buff => {
+        if (buff.effect === "increase_damage") {
+            damageMultiplier += buff.value;
+        } else if (buff.effect === "reduce_resistance") {
+            resistanceReduction += buff.value;
+        } else if (buff.effect === "pre_emergent_bonus") {
+            preEmergentBonusActive = true;
+        } else if (buff.effect === "post_emergent_bonus") {
+            postEmergentBonusActive = true;
+        } else if (buff.effect === "agro_advice") { // Changed from agro_damage_multiplier
+            damageMultiplier *= buff.value;
+        } else if (buff.effect === "spot_spray_multiplier") { // New effect for Spot Spraying
+            spotSprayMultiplier = buff.value;
+        }
+      });
+
+      cards.forEach(card => {
+        let damage = card.strength;
+        let message = '';
+
+        // Enhanced real-life effectiveness: boost if matches known effective combos in WA
+        if (weed.name === "Annual Ryegrass" && card.moa === "HPPD inhibitors") damage *= 1.8;
+        if (weed.name === "Wild Radish" && card.moa === "ALS inhibitors") damage *= 1.8;
+        if (weed.name === "Wild Oats" && card.moa === "Photosystem II inhibitors") damage *= 1.8;
+        if (weed.name === "Brome Grass" && card.moa === "Glyphosate") damage *= 1.8;
+
+        if (weed.susceptibleMoAs.includes(card.moa)) {
+          damage = Math.floor(damage * 1.5);
+          message += `${card.name} is effective! `;
+        }
+        if (weed.resistantMoAs.includes(card.moa)) {
+          damage = Math.floor(damage * (0.5 + resistanceReduction));
+          message += `${card.name} faced resistance. `;
+        }
+
+        if (weedWeaknessRevealed && weed.weaknessMoA && weed.weaknessMoA === card.moa) {
+          damage = Math.floor(damage * 2);
+          message += `Critical hit! ${card.name} is super effective against ${weed.name}'s weakness! `;
+        }
+
+        let stageBonus = 0;
+        if (card.type === "pre-emergent" && weed.growthStage === "seedling") {
+          stageBonus = 0.75;
+          message += `${card.name} is ideal for the seedling stage. `;
+        } else if (card.type === "post-emergent" && weed.growthStage !== "seedling") {
+          stageBonus = 0.75;
+          message += `${card.name} is ideal for the current growth stage. `;
+        } else {
+          damage = Math.floor(damage * 0.7);
+          message += `${card.name} is less effective at this growth stage. `;
+        }
+
+        if (preEmergentBonusActive && card.type === "pre-emergent") {
+          damage = Math.floor(damage * (1 + activeBuffs.find(b => b.effect === "pre_emergent_bonus").value));
+          message += `Summer Weed Control boosted ${card.name}! `;
+        }
+        if (postEmergentBonusActive && card.type === "post-emergent") {
+          damage = Math.floor(damage * (1 + activeBuffs.find(b => b.effect === "post_emergent_bonus").value));
+          message += `Seed Destructor boosted ${card.name}! `;
+        }
+
+        totalDamage += Math.floor(damage * (1 + stageBonus));
+        uniqueMoAs.add(card.moa);
+        updateInfo(message);
+      });
+
+      // Apply overall damage multiplier (including Agro boost)
+      totalDamage = Math.floor(totalDamage * damageMultiplier);
+
+      // Apply Spot Spraying multiplier last
+      totalDamage = Math.floor(totalDamage * spotSprayMultiplier);
+
+
+      // New: 10-30% bonus for distinct Modes of Action
+      if (uniqueMoAs.size > 1) {
+          const bonusPercentage = 0.1 + Math.random() * 0.2; // 10% to 30%
+          const bonusAmount = Math.floor(totalDamage * bonusPercentage);
+          totalDamage += bonusAmount;
+          // FIX: Remove money symbol for damage output
+          updateInfo(`Synergy Bonus! +${bonusAmount} damage for using distinct Modes of Action!`);
+      }
+
+      return totalDamage;
+    }
+
+    // Helper: safely add resistance without duplicates
+    function addResistance(moa) {
+      if (!currentWeed) return;
+      if (!currentWeed.resistantMoAs.includes(moa)) {
+        currentWeed.resistantMoAs.push(moa);
+      }
+    }
+
+    function drawBattle() {
+  ctx.clearRect(0, 0, CANVAS_BASE_WIDTH, CANVAS_BASE_HEIGHT);
+      if (!currentWeed) return;
+
+      ctx.font = '60px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-color').trim() || '#333';
+      ctx.fillText(currentWeed.icon, WEED_X + 50, Y_OFFSET + 50);
+
+      ctx.font = '16px Arial';
+      ctx.fillText(currentWeed.name, WEED_X + 50, Y_OFFSET + TEXT_OFFSET_Y);
+      ctx.fillText(`Stage: ${currentWeed.growthStage}`, WEED_X + 50, Y_OFFSET + TEXT_OFFSET_Y + 20);
+      drawBar(currentWeed.hp, currentWeed.maxHp, WEED_X, Y_OFFSET + BAR_OFFSET_Y);
+
+      ctx.font = 'bold 14px Arial';
+      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--uwa-blue').trim() || '#003087';
+      ctx.fillText(`${currentWeed.hp} / ${currentWeed.maxHp} HP`, WEED_X + 50, Y_OFFSET + BAR_OFFSET_Y + 22);
+
+      if (weedDialogue) drawDialogue(
+        weedDialogue,
+        WEED_X + 50,
+        Y_OFFSET + BAR_OFFSET_Y + 40,
+        '#e8f4f8', /* Light blue background for weed dialogue */
+        getComputedStyle(document.documentElement).getPropertyValue('--uwa-blue').trim() || '#003087'
+      );
+
+      ctx.font = '60px Arial';
+      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-color').trim() || '#333';
+      ctx.fillText("👨‍🌾", PLAYER_X + 50, Y_OFFSET + 50);
+      ctx.font = '16px Arial';
+      ctx.fillText('Your Strategy', PLAYER_X + 50, Y_OFFSET + TEXT_OFFSET_Y);
+
+      const moneyBarX = PLAYER_X;
+      const moneyBarY = Y_OFFSET + BAR_OFFSET_Y;
+      drawBar(
+        money,
+        300,
+        moneyBarX,
+        moneyBarY,
+        getComputedStyle(document.documentElement).getPropertyValue('--uwa-gold').trim() || '#DAAA00',
+        '#B8860B'
+      );
+      ctx.font = 'bold 14px Arial';
+      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--uwa-gold').trim() || '#DAAA00';
+      ctx.fillText(`$${money}`, moneyBarX + 50, moneyBarY + 22);
+
+      if (farmerDialogue) drawDialogue(
+        farmerDialogue,
+        PLAYER_X + 50,
+        moneyBarY + 40,
+        '#fff8e1', /* Light gold background for farmer dialogue */
+        getComputedStyle(document.documentElement).getPropertyValue('--uwa-gold').trim() || '#DAAA00'
+      );
+    }
+
+    function drawBar(value, max, x, y, color1 = '#4CAF50', color2 = '#66BB6A') {
+      const width = 100;
+      const height = 10;
+      const ratio = value / max;
+
+      ctx.fillStyle = '#ddd'; /* Lighter grey for empty bar */
+      ctx.fillRect(x, y, width, height);
+
+      const gradient = ctx.createLinearGradient(x, y, x + width, y);
+      if (color1 && color2) {
+        gradient.addColorStop(0, color1);
+        gradient.addColorStop(1, color2);
+      } else if (ratio > 0.6) {
+        gradient.addColorStop(0, '#4CAF50'); /* Green */
+        gradient.addColorStop(1, '#66BB6A');
+      } else if (ratio > 0.2) {
+        gradient.addColorStop(0, '#FFC107'); /* Orange */
+        gradient.addColorStop(1, '#FFD54F');
+      } else {
+        gradient.addColorStop(0, '#D32F2F'); /* Red */
+        gradient.addColorStop(1, '#EF5350');
+      }
+      ctx.fillStyle = gradient;
+      ctx.fillRect(x, y, width * ratio, height);
+
+      ctx.strokeStyle = '#aaa'; /* Lighter grey border */
+      ctx.strokeRect(x, y, width, height);
+    }
+
+    function drawDialogue(text, x, y, bgColor, borderColor) {
+      ctx.font = '14px Arial';
+      const padding = 6;
+      const maxWidthBox = 200;
+      const lineHeight = 16;
+      const words = text.split(' ');
+      const lines = [];
+      let line = '';
+      words.forEach(word => {
+        const testLine = line + word + ' ';
+        const testWidth = ctx.measureText(testLine).width;
+        if (testWidth > maxWidthBox - padding * 2 && line) {
+          lines.push(line.trim());
+          line = word + ' ';
+        } else {
+          line = testLine;
+        }
+      });
+      lines.push(line.trim());
+      const boxWidth = maxWidthBox;
+      const boxHeight = lines.length * lineHeight + padding * 2;
+      const boxX = x - boxWidth / 2;
+      const boxY = y;
+      ctx.fillStyle = bgColor;
+      ctx.fillRect(boxX, boxY, boxWidth, boxHeight);
+      ctx.strokeStyle = borderColor;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(boxX, boxY, boxWidth, boxHeight);
+      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-color').trim() || '#333';
+      ctx.textAlign = 'center';
+      lines.forEach((l, i) => {
+        const textY = boxY + padding + (i + 1) * lineHeight - (lineHeight / 4);
+        ctx.fillText(l, x, textY);
+      });
+    }
+
+    function updateInfo(message = '') {
+      // If already in a lost state and waiting for loan, don't re-trigger endGameLoss
+      if (lostGame) {
+          // Update the info display with the current message, but don't re-evaluate loss conditions
+          document.getElementById('info').innerHTML = `
+            <div>Round: <span style="color: var(--uwa-blue);">${round}</span> / ${maxRounds}</div>
+            <div>Farmer Wins: <span style="color: var(--uwa-blue);">${farmerWins}</span> | Weed Wins: <span style="color: #dc3545;">${weedWins}</span></div>
+            <div>Money: <span style="color: var(--uwa-gold); ">$${money}</span></div>
+            <div>Pending Cost: <span style="color: var(--uwa-gold); ">$${pendingCost}</span></div>
+            <div style="margin-top: 0.8rem; font-style: italic;">${message}</div>
+          `;
+          // Ensure buttons are still disabled if in a lost state, unless it's the loan button
+      document.querySelectorAll('button').forEach(btn => {
+        if (btn.id !== 'bankLoanButton' && btn.id !== 'playAgainButton') {
+          btn.disabled = true;
+        }
+      });
+          return;
+      }
+
+      // If not currently in a lost state, check for loss conditions
+      if (money < minActionableCost) { // This covers money <= 0 as well if minActionableCost > 0
+        lostGame = true;
+        endGameLoss();
+        return;
+      }
+
+      // Update the main info display for normal game state
+      document.getElementById('info').innerHTML = `
+        <div>Round: <span style="color: var(--uwa-blue);">${round}</span> / ${maxRounds}</div>
+        <div>Farmer Wins: <span style="color: var(--uwa-blue);">${farmerWins}</span> | Weed Wins: <span style="color: #dc3545;">${weedWins}</span></div>
+        <div>Money: <span style="color: var(--uwa-gold); ">$${money}</span></div>
+        <div>Pending Cost: <span style="color: var(--uwa-gold); ">$${pendingCost}</span></div>
+        <div style="margin-top: 0.8rem; font-style: italic;">${message}</div>
+      `;
+
+      // Update non-herbicide action button states
+      const nonHerbicideControlsDiv = document.getElementById('nonHerbicideControls');
+      if (nonHerbicideControlsDiv) { // Ensure the div exists
+          nonHerbicideActionsData.forEach(action => {
+              const btn = nonHerbicideControlsDiv.querySelector(`button[data-action-name="${action.name}"]`);
+              if (btn) { // Ensure the button exists
+                  const isOneTimeBuffAlreadyActive = (action.type !== "persistent_buff" && activeBuffs.some(buff => buff.name === action.name));
+                  btn.disabled = isOneTimeBuffAlreadyActive || (money < pendingCost + action.cost);
+              }
+          });
+      }
+
+      // Update herbicide buttons states
+      const controlsDiv = document.getElementById('controls');
+      if (controlsDiv) {
+          const allHerbicideButtons = controlsDiv.querySelectorAll('.herbicide-button-container button:first-child');
+          allHerbicideButtons.forEach(btn => {
+              if (btn) {
+                  const cardName = btn.querySelector('small').previousSibling.textContent.trim();
+                  const card = controlCards.find(c => c.name === cardName);
+                  if (card) {
+                      const alreadySelected = selectedHerbicides.includes(card);
+                      btn.disabled = alreadySelected || (money < pendingCost + card.cost);
+                  }
+              }
+          });
+      }
+
+      const executeButton = document.getElementById('executeCombinedAttack');
+      const hasActionsToExecute = selectedHerbicides.length > 0 || activeBuffs.some(b => b.type !== 'persistent_buff');
+      if (executeButton) {
+        executeButton.disabled = !hasActionsToExecute || (money < pendingCost);
+      }
+
+      const clearButton = document.getElementById('clearSelection');
+      if (clearButton) {
+        clearButton.disabled = selectedHerbicides.length === 0 && activeBuffs.filter(b => b.type !== 'persistent_buff').length === 0;
+      }
+    }
+
+    // Function to handle weed events at the start of a round
+    function handleRoundStartEvents() {
+      const seedDestructorActive = activeBuffs.some(buff => buff.effect === "prevent_weed_growth");
+
+      // Only advance growth stage if Seed Destructor is not active
+      if (!seedDestructorActive) {
+          advanceWeedGrowthStage();
+      } else {
+          updateInfo(`Seed Destructor prevented ${currentWeed.name} from advancing growth stage!`);
+      }
+
+      const eventChance = Math.random();
+      let msg = '';
+      if (eventChance < 0.2) { // Reduced chance for random events
+        const eventType = Math.floor(Math.random() * 3); // 0: spread, 1: resistance, 2: mutation
+        let cost = 0;
+        if (eventType === 0) {
+          cost = 20 + Math.floor(Math.random() * 30);
+          money = Math.max(0, money - cost);
+          msg = `Oh no! ${currentWeed.name} spread seeds! Cleanup cost $${cost}.`;
+          weedDialogue = `My seeds are everywhere! You'll never get rid of me now!`;
+          farmerDialogue = `Seed bank explosion! This is gonna cost me.`;
+        } else if (eventType === 1) {
+          cost = 30 + Math.floor(Math.random() * 40);
+          money = Math.max(0, money - cost);
+          msg = `A resistant strain emerged! Research cost $${cost}.`;
+          weedDialogue = `Evolved resistance! Your old tricks won't work anymore!`;
+          farmerDialogue = `Resistance surge! Time to rethink my strategy.`;
+        } else {
+          // Mutation: add random resistance, prevented by Seed Destructor
+          if (!seedDestructorActive) {
+            const mutationBoost = Math.floor(currentWeed.maxHp * (0.1 + Math.random() * 0.2));
+            currentWeed.hp = Math.min(currentWeed.maxHp, currentWeed.hp + mutationBoost); // Cap at new maxHp
+            currentWeed.maxHp += mutationBoost;
+            msg = `${currentWeed.name} mutated! Gained ${mutationBoost} HP.`;
+            weedDialogue = `Mutation complete! I'm stronger and more resilient!`;
+            farmerDialogue = `What? It mutated? This weed is evolving too fast!`;
+          } else {
+            msg = `Seed Destructor prevented ${currentWeed.name} from mutating!`;
+          }
+        }
+        showWeedEventBanner(msg);
+      }
+      updateInfo(); // Update info after events
+    }
+
+
+    function showWeedEventBanner(message) {
+      let banner = document.getElementById('weedEventBanner');
+      if (!banner) {
+        banner = document.createElement('div');
+        banner.id = 'weedEventBanner';
+        document.body.insertBefore(banner, document.getElementById('info'));
+      }
+      banner.innerHTML = `<span style="color:#dc3545;">${message}</span>`;
+      banner.style.display = 'block';
+      setTimeout(() => { if (banner) banner.style.display = 'none'; }, 2200);
+    }
+
+    // Function to show win banner (for individual rounds)
+    function showWinBanner() {
+        let banner = document.getElementById('winBanner');
+        if (!banner) {
+            banner = document.createElement('div');
+            banner.id = 'winBanner';
+            document.body.insertBefore(banner, document.getElementById('info'));
+        }
+        const randomIndex = Math.floor(Math.random() * funnyWinMessages.length);
+        banner.innerHTML = `<span>${funnyWinMessages[randomIndex]}</span>`;
+        banner.style.display = 'block';
+        setTimeout(() => { if (banner) banner.style.display = 'none'; }, 2500);
+    }
+
+    // New: Function to show overall game win banner
+    function showOverallWinBanner() {
+        let banner = document.getElementById('overallWinBanner');
+        if (!banner) {
+            banner = document.createElement('div');
+            banner.id = 'overallWinBanner';
+            document.body.appendChild(banner); // Append to body to ensure it's on top
+        }
+        const randomIndex = Math.floor(Math.random() * funnyOverallWinMessages.length);
+        banner.innerHTML = `<span>${funnyOverallWinMessages[randomIndex]}</span>`;
+        banner.style.display = 'flex'; // Use flex to center content
+        // Hide after a few seconds
+        setTimeout(() => { if (banner) banner.style.display = 'none'; }, 5000);
+    }
+
+    function resetBattle(skipEvents = false) {
+      // Initialize a new weed and round state. If skipEvents is true, avoid start-of-round events (used after loans).
+      clearSelection();
+      currentWeed = pickRandomWeed();
+      activeBuffs.forEach(buff => {
+        if (buff.effect === "reduce_weed_hp") {
+          currentWeed.maxHp = Math.max(10, Math.floor(currentWeed.maxHp * (1 - buff.value)));
+          currentWeed.hp = currentWeed.maxHp;
+          updateInfo(`Crop Rotation reduced ${currentWeed.name}'s HP!`);
+        }
+      });
+      if (!skipEvents) {
+        handleRoundStartEvents();
+      }
+      drawBattle();
+      updateInfo(`Round ${round} begins! A new ${currentWeed.name} (Stage: ${currentWeed.growthStage}) appeared!`);
+      lostGame = false;
+    }
+
+    function endGame(finalMessage = '') { // Added finalMessage parameter
+      if (finalMessage === '') { // If no specific message, determine based on wins
+        if (farmerWins >= 3) {
+          finalMessage = `You won the series! Farmer: ${farmerWins} - Weed: ${weedWins}. Excellent Agronomy!`;
+          showOverallWinBanner(); // Show overall win banner
+        } else if (weedWins >= 3) {
+          finalMessage = `The weeds won the series! Farmer: ${farmerWins} - Weed: ${weedWins}. Better luck next time!`;
+        } else if (round > maxRounds) {
+          if (farmerWins > weedWins) finalMessage = `Game over! Max rounds reached. You won the series! Farmer: ${farmerWins} - Weed: ${weedWins}.`;
+          else if (weedWins > farmerWins) finalMessage = `Game over! Max rounds reached. The weeds won the series! Farmer: ${farmerWins} - Weed: ${weedWins}.`;
+          else finalMessage = `Game over! Max rounds reached. It's a draw! Farmer: ${farmerWins} - Weed: ${weedWins}.`;
+        }
+      }
+      updateInfo(finalMessage + " Game finished!");
+      document.querySelectorAll('button').forEach(btn => btn.disabled = true);
+      // Offer a quick way to restart
+      showPlayAgainButton();
+    }
+
+    // Show a centered Play Again button after the game ends
+    function showPlayAgainButton() {
+      const infoDiv = document.getElementById('info');
+      let pa = document.getElementById('playAgainContainer');
+      if (!pa) {
+        pa = document.createElement('div');
+        pa.id = 'playAgainContainer';
+        pa.style.maxWidth = '420px';
+        pa.style.margin = '1rem auto';
+        pa.style.background = 'var(--section-background)';
+        pa.style.border = '2px solid var(--uwa-blue)';
+        pa.style.borderRadius = '10px';
+        pa.style.padding = '1rem 1.2rem 1.25rem';
+        pa.style.textAlign = 'center';
+        pa.style.boxShadow = '0 6px 14px rgba(0,0,0,0.15)';
+        pa.style.fontSize = '0.95rem';
+        if (infoDiv && infoDiv.parentNode) infoDiv.parentNode.insertBefore(pa, infoDiv.nextSibling);
+        else document.body.appendChild(pa);
+      }
+      pa.innerHTML = `
+        <div style="font-weight:bold; color: var(--uwa-blue); margin-bottom:0.6rem;">Want another go?</div>
+        <button id="playAgainButton" style="background: linear-gradient(145deg, var(--uwa-gold), #B8860B); color:#222; padding:0.7rem 1.1rem; border:none; border-radius:6px; cursor:pointer; font-size:1rem;">🔁 Play Again</button>
+      `;
+      const btn = document.getElementById('playAgainButton');
+      if (btn) {
+        btn.disabled = false; // ensure enabled even if global disabling ran
+        // Simple, robust restart: refresh the page
+        btn.onclick = () => { window.location.reload(); };
+      }
+    }
+
+    // Fully reset the game to its initial state and start Round 1
+    function restartGame() {
+      // Remove any temporary UI
+      const pa = document.getElementById('playAgainContainer');
+      if (pa && pa.parentNode) pa.parentNode.removeChild(pa);
+      const loanCard = document.getElementById('loanCard');
+      if (loanCard && loanCard.parentNode) loanCard.parentNode.removeChild(loanCard);
+      const winBanner = document.getElementById('winBanner');
+      if (winBanner) winBanner.style.display = 'none';
+      const weedEventBanner = document.getElementById('weedEventBanner');
+      if (weedEventBanner) weedEventBanner.style.display = 'none';
+      const overallWinBanner = document.getElementById('overallWinBanner');
+      if (overallWinBanner) overallWinBanner.style.display = 'none';
+
+      // Reset core state
+      money = 100;
+      lostGame = false;
+      bankLoanCount = 0;
+      roundWinCount = 0;
+      round = 1;
+      farmerWins = 0;
+      weedWins = 0;
+      weedStrengthMultiplier = 0.8;
+      selectedHerbicides = [];
+      activeBuffs = [];
+      weedWeaknessRevealed = false;
+      pendingCost = 0;
+      agroAdviceHerbicides = [];
+      agroRecommendedActions = [];
+      farmerDialogue = '';
+      weedDialogue = '';
+      recalcMinActionableCost();
+
+      // Clear any dim overlays and re-enable controls
+      [document.getElementById('controls'), document.getElementById('nonHerbicideControls'), document.getElementById('selectedHerbicides')]
+        .forEach(el => { if (el) el.classList.remove('bankrupt-dim'); });
+      document.querySelectorAll('#controls button, #nonHerbicideControls button, #selectedHerbicides button')
+        .forEach(btn => { btn.disabled = false; });
+
+      // Re-init fresh game
+      currentWeed = pickRandomWeed();
+      initControls();
+      drawBattle();
+      updateInfo('Round 1 begins! Select herbicides and actions, then click "Execute Combined Attack".');
+    }
+
+    function endGameLoss() {
+      // Apply loss to weed wins first so guard reflects new state
+      weedWins++;
+      if (farmerWins >= 3 || weedWins >= 3 || round > maxRounds) {
+        endGame();
+        return;
+      }
+
+  ctx.clearRect(0, 0, CANVAS_BASE_WIDTH, CANVAS_BASE_HEIGHT);
+      ctx.font = '30px Arial';
+      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-color').trim() || '#333';
+      ctx.textAlign = 'center';
+      ctx.fillText('Out of Money!', canvas.width/2, canvas.height/2 - 50);
+      const randomIndex = Math.floor(Math.random() * funnyLossMessages.length);
+      ctx.font = '18px Arial';
+      ctx.fillText(funnyLossMessages[randomIndex], canvas.width/2, canvas.height/2);
+      
+  // Dim (disable) existing controls instead of removing them to preserve context
+  const controlsEl = document.getElementById('controls');
+  const nonHerbEl = document.getElementById('nonHerbicideControls');
+  const selectedEl = document.getElementById('selectedHerbicides');
+  [controlsEl, nonHerbEl, selectedEl].forEach(el => { if (el && !el.classList.contains('bankrupt-dim')) el.classList.add('bankrupt-dim'); });
+  document.querySelectorAll('#controls button, #nonHerbicideControls button, #selectedHerbicides button').forEach(btn => { btn.disabled = true; });
+      
+      const infoDiv = document.getElementById('info');
+      let loanCard = document.getElementById('loanCard');
+      if (!loanCard) {
+        loanCard = document.createElement('div');
+        loanCard.id = 'loanCard';
+        loanCard.style.maxWidth = '420px';
+        loanCard.style.margin = '1rem auto';
+        loanCard.style.background = 'var(--section-background)';
+        loanCard.style.border = '2px solid var(--uwa-blue)';
+        loanCard.style.borderRadius = '10px';
+        loanCard.style.padding = '1rem 1.2rem 1.25rem';
+        loanCard.style.textAlign = 'center';
+        loanCard.style.boxShadow = '0 6px 14px rgba(0,0,0,0.15)';
+        loanCard.style.fontSize = '0.95rem';
+        infoDiv.parentNode.insertBefore(loanCard, infoDiv.nextSibling);
+      }
+
+      if (bankLoanCount < 3) {
+        loanCard.innerHTML = `
+          <div style="font-weight:bold; color:#dc3545; margin-bottom:0.4rem;">Out of Money</div>
+          <div style="margin-bottom:0.6rem; font-style:italic; color:#dc3545;">${funnyLossMessages[randomIndex]}</div>
+          <div style="margin-bottom:0.6rem;">Current Funds: <span style=\"color: var(--uwa-gold); font-weight:bold;\">$${money}</span></div>
+          <button id="bankLoanButton" style="background: linear-gradient(145deg, var(--uwa-blue), #001F5B); color:#fff; padding:0.7rem 1.1rem; border:none; border-radius:6px; cursor:pointer; font-size:1rem;">💰 Ask for Bank Loan</button>
+          <div style="margin-top:0.5rem; font-size:0.8rem; color:#555;">Loans remaining: ${3 - bankLoanCount}</div>
+        `;
+        const btn = document.getElementById('bankLoanButton');
+        if (btn) btn.onclick = getBankLoan;
+      } else {
+        loanCard.innerHTML = `
+          <div style="font-weight:bold; color:#dc3545; margin-bottom:0.4rem;">Too Many Loans</div>
+          <div style="margin-bottom:0.6rem; font-style:italic; color:#dc3545;">${funnyLossMessages[randomIndex]}</div>
+          <div style="margin-top:0.6rem; color:#dc3545; font-weight:bold;">You've taken too many loans! Game Over.</div>
+        `;
+        endGame("You've taken too many loans! Game Over.");
+      }
+      lostGame = true;
+    }
+
+    function getBankLoan() {
+      // Handle loan redemption; restore funds and resume play
+      if (!lostGame) return;
+
+      bankLoanCount++;
+      let loanAmount = 0;
+      if (bankLoanCount === 1) loanAmount = 100;
+      else if (bankLoanCount === 2) loanAmount = 75;
+      else if (bankLoanCount === 3) loanAmount = 50;
+      else { endGame("You've taken too many loans! Game Over."); return; }
+
+      // Grant funds and reset transient state
+      money = loanAmount;
+      pendingCost = 0;
+      selectedHerbicides = [];
+      weedWeaknessRevealed = false;
+      farmerDialogue = '';
+      weedDialogue = '';
+      lostGame = false;
+
+      // Advance round if possible
+      if (round < maxRounds) round++;
+
+      // Ensure selection block exists
+      const selectedDiv = document.getElementById('selectedHerbicides');
+      if (selectedDiv && !selectedDiv.querySelector('#executeCombinedAttack')) {
+        selectedDiv.innerHTML = 'Selected for attack: <span id="selectedHerbicidesDisplay">None</span> <button id="executeCombinedAttack">Execute Combined Attack</button> <button id="clearSelection">Clear</button>';
+      }
+
+      recalcMinActionableCost();
+      initControls();
+      resetBattle(true); // Avoid immediate round-start penalties after taking a loan
+
+      // Remove loan card if present
+      const loanCard = document.getElementById('loanCard');
+      if (loanCard && loanCard.parentNode) loanCard.parentNode.removeChild(loanCard);
+
+      // Re-enable controls and clear dimming
+      [document.getElementById('controls'), document.getElementById('nonHerbicideControls'), document.getElementById('selectedHerbicides')]
+        .forEach(el => { if (el) el.classList.remove('bankrupt-dim'); });
+      document.querySelectorAll('#controls button, #nonHerbicideControls button, #selectedHerbicides button')
+        .forEach(btn => { btn.disabled = false; });
+
+      if (weedWins >= 3 || farmerWins >= 3 || round > maxRounds) { endGame(); return; }
+      updateInfo(`The bank has given you a loan of $${loanAmount}. You're back in the game!`);
+      drawBattle();
+    }
+
+    function updateSelectedHerbicidesDisplay() {
+      const displayDiv = document.getElementById('selectedHerbicidesDisplay');
+      if (displayDiv) {
+        if (selectedHerbicides.length === 0) {
+          displayDiv.textContent = 'None';
+        } else {
+          displayDiv.textContent = selectedHerbicides.map(h => `${h.name} ($${h.cost})`).join(', ');
+        }
+      }
+      updateInfo();
+    }
+
+    function selectHerbicide(index) {
+      const card = controlCards[index];
+      if (!selectedHerbicides.includes(card)) {
+        selectedHerbicides.push(card);
+        pendingCost += card.cost;
+        updateSelectedHerbicidesDisplay();
+        updateInfo(`Selected ${card.name} (${card.type}) for combination. Current pending cost: $${pendingCost}`);
+      } else {
+        updateInfo(`${card.name} is already selected.`);
+      }
+    }
+
+    function executeCombinedAttack() {
+      const hasActionsToExecute = selectedHerbicides.length > 0 || activeBuffs.some(b => b.type !== 'persistent_buff');
+      if (!hasActionsToExecute) {
+        updateInfo("No herbicides or non-herbicide actions selected for attack!");
+        return;
+      }
+
+      if (money < pendingCost) {
+        updateInfo(`Not enough money for this combined attack! Requires $${pendingCost}, you have $${money}.`);
+        return;
+      }
+
+  // FIX: Capture costSpent BEFORE resetting pendingCost
+  const costSpent = pendingCost;
+  money -= pendingCost;
+  pendingCost = 0;
+
+  let message = '';
+      const totalDamage = calculateCombinedDamage(selectedHerbicides, currentWeed);
+
+      selectedHerbicides.forEach(card => {
+        if (currentWeed.resistantMoAs.includes(card.moa)) {
+          const counterAttackType = Math.floor(Math.random() * 3);
+          const counterValue = Math.floor(currentWeed.pointValue * (Math.random() * 3 + 2));
+          if (counterAttackType === 0) {
+            currentWeed.hp = Math.min(currentWeed.maxHp, currentWeed.hp + counterValue);
+            message += `Weed gained ${counterValue} HP due to ${card.name} resistance! `;
+            weedDialogue = `Ha! My resistance to ${card.moa} is strong! I just absorbed that!`;
+            farmerDialogue = `Blast! It just powered up from my ${card.name}!`;
+          } else if (counterAttackType === 1) {
+            money = Math.max(0, money - counterValue);
+            message += `Weed resisted ${card.name} and you lost $${counterValue}! `;
+            weedDialogue = `That ${card.moa} just cost you, farmer! My population is thriving!`;
+            farmerDialogue = `Curse their evolved resistance! My budget just took a hit!`;
+          } else {
+            const newResistance = controlCardsData[Math.floor(Math.random() * controlCardsData.length)].moa;
+            if (!currentWeed.resistantMoAs.includes(newResistance)) {
+              addResistance(newResistance);
+              message += `Weed mutated! Gained resistance to ${newResistance}! `;
+              weedDialogue = `Mutation! Now I'm resistant to ${newResistance} too!`;
+              farmerDialogue = `It mutated a new resistance? This is getting out of hand!`;
+            }
+          }
+        }
+      });
+
+      currentWeed.hp = Math.max(0, currentWeed.hp - totalDamage);
+      message += `Combined attack dealt ${totalDamage} damage. `;
+
+      if (totalDamage > costSpent) {
+        const f = costVsDamageDialogues.favorable.farmer;
+        const w = costVsDamageDialogues.favorable.weed;
+        farmerDialogue = f[Math.floor(Math.random() * f.length)];
+        weedDialogue = w[Math.floor(Math.random() * w.length)];
+      } else if (costSpent > totalDamage) {
+        const f = costVsDamageDialogues.unfavorable.farmer;
+        const w = costVsDamageDialogues.unfavorable.weed;
+        farmerDialogue = f[Math.floor(Math.random() * f.length)];
+        weedDialogue = w[Math.floor(Math.random() * w.length)];
+      } else {
+        farmerDialogue = '';
+        weedDialogue = '';
+      }
+
+      if (currentWeed.hp === 0) {
+        farmerDialogue = `Another one bites the dust! My crops can finally breathe!`;
+        weedDialogue = `Agh... my life cycle... interrupted! But my seeds will live on!`;
+        
+        // Tiered bonus money for winning a round
+        let bonusMoney = 0;
+        roundWinCount++; // Increment win count
+        if (roundWinCount === 1) {
+            bonusMoney = 50;
+        } else if (roundWinCount === 2) {
+            bonusMoney = 75;
+        } else {
+            bonusMoney = 100; // For 3rd win and onwards
+        }
+
+        money += currentWeed.maxHp + bonusMoney;
+        message += `Defeated ${currentWeed.name}! Earned $${currentWeed.maxHp} + $${bonusMoney} (bountiful crop)!`;
+        farmerWins++;
+        weedStrengthMultiplier += 0.2 + Math.random() * 0.1;
+        updateInfo(message);
+        showWinBanner(); // Show win banner here
+        setTimeout(() => {
+          selectedHerbicides = [];
+          updateSelectedHerbicidesDisplay();
+          activeBuffs = activeBuffs.filter(buff => buff.type === "persistent_buff");
+          weedWeaknessRevealed = false;
+          if (farmerWins >= 3 || weedWins >= 3 || round >= maxRounds) {
+            endGame();
+          } else {
+            round++;
+            lostGame = false; // Reset lostGame when winning and moving to next round
+            resetBattle();
+          }
+        }, 1500);
+      } else {
+        updateInfo(message);
+      }
+      drawBattle();
+      clearSelection();
+    }
+
+    function clearSelection() {
+      selectedHerbicides = [];
+      activeBuffs = activeBuffs.filter(buff => buff.type === "persistent_buff");
+      pendingCost = 0;
+      weedWeaknessRevealed = false;
+      updateSelectedHerbicidesDisplay();
+      updateInfo("Selection cleared. Pending cost reset.");
+    }
+
+    function activateNonHerbicideAction(action) {
+      if (money < pendingCost + action.cost) {
+        updateInfo(`Not enough money to add ${action.name} to your pending attack! Requires $${pendingCost + action.cost}, you have $${money}.`);
+        return;
+      }
+      if (action.type !== "persistent_buff" && activeBuffs.some(buff => buff.name === action.name)) {
+        updateInfo(`${action.name} is already active for this attack.`);
+        return;
+      }
+
+      pendingCost += action.cost;
+      updateInfo(`Used ${action.name}! Current pending cost: $${pendingCost}. ${action.description}`);
+
+      if (action.type === "buff" || action.type === "debuff") {
+          activeBuffs.push(action);
+      } else if (action.type === "setup") {
+          activeBuffs.push(action);
+          if (action.effect === "halve_weed_hp") {
+              currentWeed.hp = Math.max(1, Math.floor(currentWeed.hp / 2));
+              currentWeed.maxHp = Math.max(1, Math.floor(currentWeed.maxHp / 2));
+              updateInfo(`Summer Weed Control immediately halved ${currentWeed.name}'s HP!`);
+              drawBattle(); // Redraw HP bar immediately
+          }
+      } else if (action.type === "persistent_buff") {
+          activeBuffs.push(action);
+          if (action.effect === "reduce_weed_hp") {
+              currentWeed.maxHp = Math.max(10, Math.floor(currentWeed.maxHp * (1 - action.value)));
+              currentWeed.hp = Math.min(currentWeed.hp, currentWeed.maxHp);
+              updateInfo(`Crop Rotation immediately reduced ${currentWeed.name}'s HP!`);
+          }
+      } else if (action.type === "info") {
+          if (action.effect === "reveal_weakness") {
+              weedWeaknessRevealed = true;
+              showWeedInfoModal(true);
+          } else if (action.effect === "agro_advice") { // Changed from agro_damage_multiplier
+              activeBuffs.push({ name: "Agro Boost", type: "buff", effect: "agro_advice", value: action.value }); // Use action.value (2)
+              showAgroAdvice();
+          }
+      }
+      updateInfo();
+    }
+
+    // Modal functionality for Weed Info
+    const weedInfoModal = document.getElementById('weedInfoModal');
+    const closeButton = document.querySelector('#weedInfoModal .close-button');
+    if (closeButton) {
+        closeButton.onclick = function() {
+            weedInfoModal.style.display = "none";
+        }
+    }
+    window.onclick = function(event) {
+      if (event.target == weedInfoModal) {
+        weedInfoModal.style.display = "none";
+      }
+    }
+
+    function showWeedInfoModal(scouted = false) {
+        if (!currentWeed) return;
+
+        document.getElementById('modalWeedName').textContent = currentWeed.name;
+        document.getElementById('modalWeedGrowthStage').textContent = currentWeed.growthStage;
+
+        const susceptibleList = document.getElementById('modalWeedSusceptibleMoAs');
+        susceptibleList.innerHTML = '';
+        currentWeed.susceptibleMoAs.forEach(moa => {
+            const li = document.createElement('li');
+            li.textContent = moa;
+            susceptibleList.appendChild(li);
+        });
+
+        const resistantList = document.getElementById('modalWeedResistantMoAs');
+        resistantList.innerHTML = '';
+        currentWeed.resistantMoAs.forEach(moa => {
+            const li = document.createElement('li');
+            li.textContent = moa;
+            resistantList.appendChild(li);
+        });
+
+        const weaknessSpan = document.getElementById('modalWeedWeakness');
+        const scoutingMessage = document.getElementById('scoutingMessage');
+
+        if (scouted) {
+            weaknessSpan.textContent = currentWeed.weaknessMoA || 'None known';
+            scoutingMessage.textContent = "Scouting successful! Weakness revealed.";
+        } else {
+            weaknessSpan.textContent = '??? (Use Scouting to reveal)';
+            scoutingMessage.textContent = "Use 'Scouting' action to reveal the weed's specific weakness.";
+        }
+
+        weedInfoModal.style.display = "flex";
+    }
+
+    function showAgroAdvice() {
+      if (!currentWeed) { updateInfo("No weed to advise on!"); return; }
+
+      // Remaining budget after already committed pendingCost (includes Call the Agro cost)
+      const remaining = money - pendingCost;
+      if (remaining <= 0) { updateInfo("Agro's Advice: No remaining budget to form a combo."); return; }
+
+      // Gather candidate herbicides (affordable individually) and key non-herb buffs
+      const herbicides = controlCards.filter(c => !selectedHerbicides.includes(c) && c.cost <= remaining);
+      const adjuvant = nonHerbicideActionsData.find(a => a.name === 'Adjuvant');
+      const spotSpray = nonHerbicideActionsData.find(a => a.name === 'Spot Spraying');
+
+      // Helper: generate combinations of size k (k=1..3) for herbicides
+      function kCombos(arr, k, start = 0, path = [], acc = []) {
+        if (path.length === k) { acc.push([...path]); return acc; }
+        for (let i = start; i < arr.length; i++) {
+          path.push(arr[i]);
+            kCombos(arr, k, i + 1, path, acc);
+          path.pop();
+        }
+        return acc;
+      }
+      const allHerbCombos = [];
+      [1,2,3].forEach(k => kCombos(herbicides, k).forEach(c => allHerbCombos.push(c)));
+      if (allHerbCombos.length === 0) { updateInfo("Agro's Advice: No affordable herbicide combinations remaining."); return; }
+
+      // Estimation function (deterministic: uses average synergy 20%)
+      function estimateDamage(herbList, useAdjuvant, useSpot) {
+        let dmg = 0; const unique = new Set();
+        herbList.forEach(card => {
+          let d = card.strength;
+          // Real-life boosts
+          if (currentWeed.name === "Annual Ryegrass" && card.moa === "HPPD inhibitors") d *= 1.8;
+          if (currentWeed.name === "Wild Radish" && card.moa === "ALS inhibitors") d *= 1.8;
+          if (currentWeed.name === "Wild Oats" && card.moa === "Photosystem II inhibitors") d *= 1.8;
+          if (currentWeed.name === "Brome Grass" && card.moa === "Glyphosate") d *= 1.8;
+          if (currentWeed.susceptibleMoAs.includes(card.moa)) d *= 1.5;
+          if (currentWeed.resistantMoAs.includes(card.moa)) d *= 0.5; // ignore resistanceReduction buffs for advisory
+          if (weedWeaknessRevealed && currentWeed.weaknessMoA === card.moa) d *= 2;
+          if (card.type === 'pre-emergent' && currentWeed.growthStage === 'seedling') d *= 1.75; // 1 + 0.75 stageBonus approximation
+          else if (card.type === 'post-emergent' && currentWeed.growthStage !== 'seedling') d *= 1.75;
+          else d *= 0.7; // stage penalty
+          dmg += Math.floor(d);
+          unique.add(card.moa);
+        });
+        // Average synergy bonus if more than one MoA
+        if (unique.size > 1) dmg = Math.floor(dmg * 1.2); // average of 10-30%
+        // Apply existing agro_advice buff (damage multiplier) if present
+        const agroBuff = activeBuffs.find(b => b.effect === 'agro_advice');
+        if (agroBuff) dmg = Math.floor(dmg * agroBuff.value);
+        if (useAdjuvant) dmg = Math.floor(dmg * 1.2);
+        if (useSpot) dmg = Math.floor(dmg * 5);
+        return dmg;
+      }
+
+      let best = null;
+      for (const herbs of allHerbCombos) {
+        const baseCost = herbs.reduce((s,c)=>s+c.cost,0);
+        const adjuvantCost = adjuvant && !activeBuffs.some(b=>b.name==='Adjuvant') ? adjuvant.cost : Infinity;
+        const spotCost = spotSpray && !activeBuffs.some(b=>b.name==='Spot Spraying') ? spotSpray.cost : Infinity;
+        // Evaluate four buff inclusion states
+        const buffStates = [
+          {a:false,s:false,cost:0},
+          {a:true,s:false,cost: adjuvantCost},
+          {a:false,s:true,cost: spotCost},
+          {a:true,s:true,cost: (adjuvantCost===Infinity||spotCost===Infinity)?Infinity:adjuvantCost+spotCost}
+        ];
+        for (const st of buffStates) {
+          if (st.cost === Infinity) continue;
+          const totalCost = baseCost + st.cost;
+          if (totalCost > remaining) continue;
+          const dmg = estimateDamage(herbs, st.a, st.s);
+            if (dmg <= 0) continue;
+          const efficiency = dmg / totalCost;
+          if (!best || efficiency > best.eff || (efficiency === best.eff && dmg > best.dmg)) {
+            best = { herbs, useAdjuvant: st.a, useSpot: st.s, dmg, cost: totalCost, eff: efficiency };
+          }
+        }
+      }
+
+      if (!best) { updateInfo("Agro's Advice: No cost-effective combo fits the remaining budget."); agroAdviceHerbicides = []; agroRecommendedActions = []; highlightAgroAdviceHerbicides(); return; }
+
+      // Prepare highlighting arrays
+      agroAdviceHerbicides = best.herbs; // for existing highlight path
+      agroRecommendedActions = [...best.herbs];
+      if (best.useAdjuvant && adjuvant) agroRecommendedActions.push(adjuvant);
+      if (best.useSpot && spotSpray) agroRecommendedActions.push(spotSpray);
+
+      const dmgPerDollar = (best.eff).toFixed(2);
+      updateInfo(`Agro's Advice: Best combo (damage per $) does about ${best.dmg} damage for $${best.cost} (≈ ${dmgPerDollar} dmg/$).`);
+      farmerDialogue = "Optimized plan locked in! Highest impact per dollar.";
+      weedDialogue = "Uh oh, they're optimizing inputs...";
+      highlightAgroAdviceHerbicides();
+    }
+
+    function highlightAgroAdviceHerbicides() {
+      const controlsDiv = document.getElementById('controls');
+      const nonHerbicideControlsDiv = document.getElementById('nonHerbicideControls');
+
+      // Remove highlight from all herbicide buttons
+      Array.from(controlsDiv.querySelectorAll('.herbicide-button-container button:first-child')).forEach(btn => {
+        btn.style.boxShadow = '';
+        btn.style.border = '';
+      });
+      // Remove highlight from all non-herbicide buttons
+      Array.from(nonHerbicideControlsDiv.querySelectorAll('button')).forEach(btn => {
+        btn.style.boxShadow = '';
+        btn.style.border = '';
+      });
+
+      // Highlight the best combination
+  (agroRecommendedActions.length ? agroRecommendedActions : agroAdviceHerbicides).forEach(adviceAction => {
+        let targetButton = null;
+        if (controlCards.includes(adviceAction)) { // It's a herbicide
+          targetButton = Array.from(controlsDiv.querySelectorAll('.herbicide-button-container button:first-child'))
+                               .find(btn => btn.querySelector('small').previousSibling.textContent.trim() === adviceAction.name);
+        } else { // It's a non-herbicide action
+          targetButton = nonHerbicideControlsDiv.querySelector(`button[data-action-name="${adviceAction.name}"]`);
+        }
+        
+        if (targetButton) {
+          targetButton.style.boxShadow = '0 0 12px 4px var(--uwa-gold)';
+          targetButton.style.border = '2px solid var(--uwa-gold)';
+        }
+      });
+    }
+
+    function initControls() {
+      const controlsDiv = document.getElementById('controls');
+      controlsDiv.innerHTML = ''; // Clear existing controls
+
+      // Ensure selection controls exist (idempotent)
+      const selectedContainer = document.getElementById('selectedHerbicides');
+      if (selectedContainer && !selectedContainer.querySelector('#executeCombinedAttack')) {
+        selectedContainer.innerHTML = 'Selected for attack: <span id="selectedHerbicidesDisplay">None</span> <button id="executeCombinedAttack">Execute Combined Attack</button> <button id="clearSelection">Clear</button>';
+      }
+
+      controlCards.forEach((card) => {
+        const btn = document.createElement('button');
+        btn.innerHTML = `${card.icon} ${card.name}<br><small>($${card.cost}) - ${card.type}</small>`;
+        btn.onclick = () => selectHerbicide(controlCards.indexOf(card));
+        btn.classList.add(moaToClass[card.moa]); // Add MoA specific class
+
+        const viewHerbicideInfoBtn = document.createElement('button');
+        viewHerbicideInfoBtn.innerText = 'ℹ️ View Info';
+        viewHerbicideInfoBtn.style.backgroundColor = '#6c757d';
+        viewHerbicideInfoBtn.style.backgroundImage = 'linear-gradient(145deg, #6c757d, #545b62)';
+        viewHerbicideInfoBtn.style.fontSize = '0.8rem';
+        viewHerbicideInfoBtn.style.color = '#fff';
+        viewHerbicideInfoBtn.onclick = (event) => {
+            event.stopPropagation();
+            showHerbicideInfo(card);
+        };
+
+        const container = document.createElement('div');
+        container.classList.add('herbicide-button-container'); // Add a class for easier selection
+        container.style.display = 'flex';
+        container.style.flexDirection = 'column';
+        container.style.alignItems = 'center';
+        container.style.minWidth = '140px';
+        container.style.margin = '4px';
+        container.appendChild(btn);
+        container.appendChild(viewHerbicideInfoBtn);
+        controlsDiv.appendChild(container);
+      });
+
+      // Combined attack controls
+  const execBtn = document.getElementById('executeCombinedAttack');
+  if (execBtn) execBtn.onclick = executeCombinedAttack;
+  const clrBtn = document.getElementById('clearSelection');
+  if (clrBtn) clrBtn.onclick = clearSelection;
+      updateSelectedHerbicidesDisplay();
+
+      // Add non-herbicide action buttons
+      const nonHerbicideControlsDiv = document.getElementById('nonHerbicideControls');
+      nonHerbicideControlsDiv.innerHTML = '';
+      nonHerbicideActionsData.forEach(action => {
+        const btn = document.createElement('button');
+        btn.innerHTML = `${action.icon} ${action.name}<br><small>(Cost: $${action.cost})</small>`;
+        btn.onclick = () => activateNonHerbicideAction(action);
+        btn.disabled = money < action.cost;
+        btn.setAttribute('data-action-name', action.name);
+        if (action.name === "Call the Agro" || action.name === "Scouting") {
+            btn.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--uwa-blue').trim();
+            btn.style.backgroundImage = `linear-gradient(145deg, ${getComputedStyle(document.documentElement).getPropertyValue('--uwa-blue').trim()}, #001F5B)`;
+            btn.style.color = '#fff';
+        } else if (action.name === "Adjuvant" || action.name === "Spot Spraying" || action.name === "Summer Weed Control" || action.name === "Seed Destructor") {
+            btn.style.backgroundColor = '#6c757d';
+            btn.style.backgroundImage = 'linear-gradient(145deg, #6c757d, #545b62)';
+            btn.style.color = '#fff';
+        }
+  const container = document.createElement('div');
+  container.style.display = 'flex';
+  container.style.flexDirection = 'column';
+  container.style.alignItems = 'center';
+  container.style.minWidth = '140px';
+  container.style.margin = '4px';
+  container.appendChild(btn);
+
+  const infoBtn = document.createElement('button');
+  infoBtn.innerText = 'ℹ️ View Info';
+  infoBtn.style.backgroundColor = '#6c757d';
+  infoBtn.style.backgroundImage = 'linear-gradient(145deg, #6c757d, #545b62)';
+  infoBtn.style.fontSize = '0.8rem';
+  infoBtn.style.color = '#fff';
+  infoBtn.onclick = (e) => { e.stopPropagation(); showNonChemInfo(action); };
+  container.appendChild(infoBtn);
+
+  nonHerbicideControlsDiv.appendChild(container);
+      });
+
+  // Weed Info button in its own container
+  const weedInfoContainer = document.createElement('div');
+  weedInfoContainer.style.display = 'flex';
+  weedInfoContainer.style.flexDirection = 'column';
+  weedInfoContainer.style.alignItems = 'center';
+  weedInfoContainer.style.minWidth = '140px';
+  weedInfoContainer.style.margin = '4px';
+  const infoButton = document.createElement('button');
+  infoButton.innerHTML = "ℹ️ Weed Info";
+  infoButton.style.backgroundColor = '#6c757d';
+  infoButton.style.backgroundImage = 'linear-gradient(145deg, #6c757d, #545b62)';
+  infoButton.style.color = '#fff';
+  infoButton.onclick = () => showWeedInfoModal(weedWeaknessRevealed);
+  weedInfoContainer.appendChild(infoButton);
+  nonHerbicideControlsDiv.appendChild(weedInfoContainer);
+
+  // Rules button in its own container
+  const rulesContainer = document.createElement('div');
+  rulesContainer.style.display = 'flex';
+  rulesContainer.style.flexDirection = 'column';
+  rulesContainer.style.alignItems = 'center';
+  rulesContainer.style.minWidth = '140px';
+  rulesContainer.style.margin = '4px';
+  const rulesButton = document.createElement('button');
+  rulesButton.innerHTML = "📜 Game Rules";
+  const uwaBlue = getComputedStyle(document.documentElement).getPropertyValue('--uwa-blue').trim();
+  rulesButton.style.backgroundColor = uwaBlue;
+  rulesButton.style.backgroundImage = `linear-gradient(145deg, ${uwaBlue}, #001F5B)`;
+  rulesButton.style.color = '#fff';
+  rulesButton.onclick = showRules;
+  rulesContainer.appendChild(rulesButton);
+  nonHerbicideControlsDiv.appendChild(rulesContainer);
+
+      highlightAgroAdviceHerbicides();
+    }
+
+    window.onload = () => {
+      resizeCanvas();
+      currentWeed = pickRandomWeed();
+      initControls();
+      drawBattle();
+      farmerDialogue = '';
+      weedDialogue = '';
+      updateInfo('Round 1 begins! Select herbicides and actions, then click "Execute Combined Attack".');
+    };
+
+    // Keep canvas crisp on orientation/size changes
+    window.addEventListener('resize', () => {
+      resizeCanvas();
+      drawBattle();
+    });
+
+    // Fallback: in case the loan button is re-rendered and loses its onclick, delegate the click.
+    document.addEventListener('click', (ev) => {
+      const el = ev.target;
+      if (el && el.id === 'bankLoanButton') {
+        getBankLoan();
+      }
+      if (el && el.id === 'playAgainButton') {
+        // Fallback delegate in case inline handler is removed
+        window.location.reload();
+      }
+    });
+  </script>
+
+  
+</body>
+</html>
+�
