@@ -898,6 +898,18 @@
     }
 
     function updateInfo(message = '') {
+      // Auto-unlock if previously bankrupt but funds are now sufficient for at least one action
+      recalcMinActionableCost();
+      if (lostGame && money >= minActionableCost) {
+        lostGame = false;
+        const loanCard = document.getElementById('loanCard');
+        if (loanCard && loanCard.parentNode) loanCard.parentNode.removeChild(loanCard);
+        [document.getElementById('controls'), document.getElementById('nonHerbicideControls'), document.getElementById('selectedHerbicides')]
+          .forEach(el => { if (el) el.classList.remove('bankrupt-dim'); });
+        document.querySelectorAll('#controls button, #nonHerbicideControls button, #selectedHerbicides button')
+          .forEach(btn => { btn.disabled = false; });
+      }
+
       // If already in a lost state and waiting for loan, don't re-trigger endGameLoss
       if (lostGame) {
           // Update the info display with the current message, but don't re-evaluate loss conditions
